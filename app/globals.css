@@ -1,26 +1,425 @@
 @import "tailwindcss";
 
+/*
+ * Plain Signal tokens (DESIGN.md §3). Stored as RGB triplets, used as rgb(var(--token)).
+ * Every gray is #191919 at an opacity. The only hue is the accent #317CFF.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --text-primary: 25 25 25;
+  --text-primary-strong: 0 0 0;
+  --text-secondary: 25 25 25 / 0.56;
+  --text-tertiary: 25 25 25 / 0.4;
+  --text-accent-primary: 49 124 255;
+  --bg-wash: 248 248 248;
+  --bg-elevated: 255 255 255;
+  --tint-tertiary: 0 0 0 / 0.04;
+  --tint-secondary: 0 0 0 / 0.06;
+  --tint-primary: 0 0 0 / 0.08;
+  --border-secondary: 0 0 0 / 0.06;
+  --border-primary: 0 0 0 / 0.08;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/*
+ * Dark tokens (DESIGN.md §3.3). Follows the system unless the toggle stored a choice,
+ * which the inline script in layout.tsx applies as data-theme before first paint.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --text-primary: 255 255 255 / 0.9;
+    --text-primary-strong: 255 255 255;
+    --text-secondary: 255 255 255 / 0.52;
+    --text-tertiary: 255 255 255 / 0.4;
+    --text-accent-primary: 73 176 255;
+    --bg-wash: 25 25 25;
+    --bg-elevated: 31 31 31;
+    --tint-tertiary: 255 255 255 / 0.04;
+    --tint-secondary: 255 255 255 / 0.05;
+    --tint-primary: 255 255 255 / 0.08;
+    --border-secondary: 255 255 255 / 0.04;
+    --border-primary: 255 255 255 / 0.08;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --text-primary: 255 255 255 / 0.9;
+  --text-primary-strong: 255 255 255;
+  --text-secondary: 255 255 255 / 0.52;
+  --text-tertiary: 255 255 255 / 0.4;
+  --text-accent-primary: 73 176 255;
+  --bg-wash: 25 25 25;
+  --bg-elevated: 31 31 31;
+  --tint-tertiary: 255 255 255 / 0.04;
+  --tint-secondary: 255 255 255 / 0.05;
+  --tint-primary: 255 255 255 / 0.08;
+  --border-secondary: 255 255 255 / 0.04;
+  --border-primary: 255 255 255 / 0.08;
+  color-scheme: dark;
+}
+
+@theme {
+  --font-sans: var(--font-inter-tight), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-ink: rgb(var(--text-primary));
+  --color-ink-strong: rgb(var(--text-primary-strong));
+  --color-ink-2: rgb(var(--text-secondary));
+  --color-ink-3: rgb(var(--text-tertiary));
+  --color-accent: rgb(var(--text-accent-primary));
+  --color-page: rgb(var(--bg-wash));
+  --color-elevated: rgb(var(--bg-elevated));
+  --color-well: rgb(var(--tint-tertiary));
+  --color-chip: rgb(var(--tint-secondary));
+  --color-line: rgb(var(--border-secondary));
+  --color-line-strong: rgb(var(--border-primary));
+
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+}
+
+@layer base {
+  html {
+    background: rgb(var(--bg-wash));
+    color: rgb(var(--text-primary));
+    -webkit-font-smoothing: antialiased;
+    scroll-padding-top: 72px;
+  }
+  body {
+    background: rgb(var(--bg-wash));
+    font: 400 16px/24px var(--font-sans);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* A utility so it accepts responsive variants (lg:t-h4) */
+@utility t-h4 {
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+@layer components {
+  /* Containers (§5.1) */
+  .page-container {
+    max-width: 1400px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+  .frame {
+    display: flex;
+    flex-direction: column;
+    padding-block: 48px;
+  }
+  @media (min-width: 1024px) {
+    .page-container {
+      padding-inline: 60px;
+    }
+    .frame {
+      padding: 60px 16px;
+      border-inline: 1px solid rgb(var(--border-secondary));
+    }
+  }
+
+  /* Type scale (§4.2). Weight 400 everywhere except the logo. */
+  .t-display {
+    font-size: 40px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .t-h2 {
+    font-size: 32px;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
+  .t-h3 {
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  .t-lead {
+    font-size: 16px;
+    line-height: 1.4;
+    color: rgb(var(--text-secondary));
+  }
+  .t-ui {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .t-mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (min-width: 768px) {
+    .t-h2 {
+      font-size: 40px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .t-display {
+      font-size: 64px;
+      line-height: 1;
+    }
+    .t-h3 {
+      font-size: 32px;
+    }
+  }
+
+  /* Brand logo (§7.13): bold wordmark plus a small mark, same size everywhere */
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: rgb(var(--text-primary));
+    border-radius: 2px;
+  }
+  .logo-mark {
+    display: grid;
+    grid-template-columns: repeat(2, 8px);
+    gap: 4px;
+  }
+  .logo-mark i {
+    width: 8px;
+    height: 8px;
+    background: rgb(var(--text-primary));
+  }
+  .logo-mark i:last-child {
+    grid-column: 2;
+  }
+  .logo:focus-visible {
+    outline: 2px solid rgb(var(--text-primary-strong));
+    outline-offset: 4px;
+  }
+
+  /* Eyebrow (§7.4) */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgb(var(--text-secondary));
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: rgb(var(--text-accent-primary));
+  }
+
+  /* Pill buttons, marketing register (§7.3) */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 20px;
+    border-radius: 9999px;
+    font-size: 16px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: clip;
+    cursor: pointer;
+    transition:
+      opacity 200ms ease,
+      background-color 200ms ease;
+  }
+  .btn:focus-visible {
+    outline: 2px solid rgb(var(--text-primary-strong));
+    outline-offset: 4px;
+  }
+  .btn-sm {
+    height: 28px;
+    padding: 0 12px 1px;
+    font-size: 14px;
+    line-height: 21px;
+  }
+  .btn-sheet {
+    height: 34px;
+    padding: 5px 16px;
+    font-size: 16px;
+  }
+  .btn-primary {
+    background: rgb(var(--text-primary-strong));
+    color: rgb(var(--bg-elevated));
+  }
+  .btn-primary:hover {
+    opacity: 0.8;
+  }
+  .btn-primary:active {
+    opacity: 0.7;
+  }
+  .btn-secondary {
+    border: 1px solid rgb(var(--border-primary));
+    color: rgb(var(--text-primary));
+  }
+  .btn-ghost {
+    color: rgb(var(--text-primary));
+  }
+  .btn-secondary:hover,
+  .btn-ghost:hover {
+    background: rgb(var(--tint-secondary));
+  }
+  .btn-secondary:active,
+  .btn-ghost:active {
+    background: rgb(var(--tint-primary));
+  }
+
+  /* Nav item (§7.1) */
+  .nav-item {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 1px 12px 0;
+    border-radius: 200px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: rgb(var(--text-primary-strong));
+    transition: background-color 200ms ease;
+  }
+  .nav-item:hover {
+    background: rgb(var(--tint-secondary));
+  }
+  .nav-item:focus-visible {
+    background: rgb(var(--tint-secondary));
+    outline: 2px solid rgb(var(--text-primary-strong));
+    outline-offset: -2px;
+  }
+  .nav-item:active {
+    background: rgb(var(--tint-primary));
+  }
+
+  /* Accent text link with chevron (§7.3) */
+  .link-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: rgb(var(--text-accent-primary));
+    font-size: 16px;
+    line-height: 1.4;
+    border-radius: 2px;
+    text-underline-offset: 4px;
+  }
+  .link-accent:hover {
+    text-decoration: underline;
+  }
+  .link-accent:focus-visible {
+    outline: 2px solid rgb(var(--text-accent-primary));
+    outline-offset: 4px;
+  }
+  .link-accent:active {
+    opacity: 0.8;
+  }
+
+  /* Muted footer link (§7.16) */
+  .link-muted {
+    color: rgb(var(--text-tertiary));
+    border-radius: 2px;
+    transition: color 200ms ease;
+  }
+  .link-muted:hover,
+  .link-muted:focus-visible {
+    color: rgb(var(--text-primary));
+  }
+  .link-muted:focus-visible {
+    outline: 2px solid rgb(var(--text-primary));
+    outline-offset: 4px;
+  }
+  .link-muted:active {
+    color: rgb(var(--text-secondary));
+  }
+
+  /* Theme toggle: show the icon for the theme you would switch to */
+  .theme-toggle {
+    width: 28px;
+    padding: 0;
+  }
+  .theme-toggle .icon-sun {
+    display: none;
+  }
+  :root[data-theme="dark"] .theme-toggle .icon-sun {
+    display: block;
+  }
+  :root[data-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .icon-sun {
+      display: block;
+    }
+    :root:not([data-theme="light"]) .theme-toggle .icon-moon {
+      display: none;
+    }
+  }
+
+  /* Mobile header and full-screen sheet (§9.1, §9.2) */
+  .m-toggle {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    border-radius: 2px;
+  }
+  .m-toggle:focus-visible {
+    outline: 2px solid rgb(var(--text-primary-strong));
+    outline-offset: -2px;
+  }
+  .m-toggle span {
+    width: 18px;
+    height: 1.5px;
+    background: rgb(var(--text-primary));
+    transition: transform 150ms ease-out;
+  }
+  .m-toggle[aria-expanded="true"] span:first-child {
+    transform: translateY(3.75px) rotate(45deg);
+  }
+  .m-toggle[aria-expanded="true"] span:last-child {
+    transform: translateY(-3.75px) rotate(-45deg);
+  }
+  .m-sheet {
+    position: fixed;
+    inset: 60px 0 0;
+    /* Opaque in both themes: #FFFFFF light, #1F1F1F dark */
+    background: rgb(var(--bg-elevated));
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+  }
+  .m-row {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgb(var(--border-secondary));
+    font-size: 16px;
+    line-height: 24px;
+    color: rgb(var(--text-primary));
+  }
+  .m-row:focus-visible {
+    outline: 2px solid rgb(var(--text-primary-strong));
+    outline-offset: -2px;
+  }
+  .m-row:active {
+    background: rgb(var(--tint-secondary));
+  }
+  @media (min-width: 1024px) {
+    .m-sheet {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+  }
 }
